@@ -1,0 +1,55 @@
+<div class="container mt-5">
+	<div class="d-flex justify-content-between align-items-center">
+		<h2>Users</h2>
+		<div>
+			<button class="btn btn-primary me-2" (click)="navigateToCreateUser()">New User</button>
+			<button class="btn btn-danger" (click)="logout()">Logout</button>
+		</div>
+	</div>
+	<hr />
+	<ul class="list-group">
+		<li *ngFor="let user of users" class="list-group-item py-3" (click)="toggleExpand(user)" style="cursor: pointer">
+			<div class="d-flex justify-content-between align-items-center">
+				<span class="flex-grow-1">
+					{{ user.username }}
+					<span *ngIf="user.unread_count && user.unread_count > 0" class="badge bg-primary rounded-pill ms-2">
+						{{ user.unread_count }}
+					</span>
+					<span *ngIf="user.last_message_timestamp" class="text-muted ms-2" style="font-size: 0.8em">
+						{{ timeSince(user.last_message_timestamp) }}
+					</span>
+				</span>
+				<div>
+					<button class="btn btn-primary btn-lg btn-sm me-2" (click)="selectUser(user); $event.stopPropagation()"><i class="bi bi-chat-dots"></i></button>
+				</div>
+			</div>
+			<div *ngIf="user.expanded" class="mt-3">
+				<hr />
+				<h5>User Controls</h5>
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<span *ngIf="clearingHistoryFor === user.username && clearHistorySuccess" class="text-success me-2">Cleared!</span>
+						<span *ngIf="clearingHistoryFor === user.username && clearHistoryError" class="text-danger me-2">Error!</span>
+						<button class="btn btn-danger btn-sm" (click)="onClearUserChatHistory(user.username); $event.stopPropagation()" [disabled]="clearingHistoryFor === user.username">
+							<span *ngIf="clearingHistoryFor !== user.username">Clear History</span>
+							<span *ngIf="clearingHistoryFor === user.username">Clearing...</span>
+						</button>
+					</div>
+				</div>
+				<div class="mt-3">
+					<h5>Notes</h5>
+					<div *ngFor="let note of user.notes" class="card mb-2">
+						<div class="card-body">
+							<p class="card-text">{{ note.content }}</p>
+							<small class="text-muted">By {{ note.admin_username }} on {{ note.timestamp | date : 'medium' }}</small>
+						</div>
+					</div>
+					<div class="mt-2">
+						<textarea class="form-control" rows="3" [(ngModel)]="user.newNote" (click)="$event.stopPropagation()"></textarea>
+						<button class="btn btn-success btn-sm mt-2" (click)="addNote(user); $event.stopPropagation()">Add Note</button>
+					</div>
+				</div>
+			</div>
+		</li>
+	</ul>
+</div>

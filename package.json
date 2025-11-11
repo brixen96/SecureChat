@@ -9,8 +9,10 @@
     "test": "ng test"
   },
   "prettier": {
-    "printWidth": 100,
+    "printWidth": 200,
     "singleQuote": true,
+    "useTabs": true,
+    "tabWidth": 4,
     "overrides": [
       {
         "files": "*.html",
@@ -28,6 +30,13 @@
     "@angular/forms": "^20.2.0",
     "@angular/platform-browser": "^20.2.0",
     "@angular/router": "^20.2.0",
+    "@angular/service-worker": "^20.2.0",
+    "@fortawesome/angular-fontawesome": "^3.0.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@ng-bootstrap/ng-bootstrap": "^19.0.1",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.6",
+    "bootstrap-icons": "^1.13.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -36,6 +45,7 @@
     "@angular/build": "^20.2.0",
     "@angular/cli": "^20.2.0",
     "@angular/compiler-cli": "^20.2.0",
+    "@angular/localize": "^20.2.0",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",

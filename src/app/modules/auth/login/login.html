@@ -1,0 +1,33 @@
+<div class="container vh-100 d-flex justify-content-center align-items-center">
+	<div class="card shadow-sm" style="width: 22rem">
+		<div class="card-body">
+			<h1 class="card-title text-center mb-4">Login</h1>
+			<div *ngIf="loginError" class="alert alert-danger" role="alert">
+				{{ loginError }}
+			</div>
+			<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+				<div class="mb-3 input-group">
+					<span class="input-group-text"><fa-icon [icon]="faUser"></fa-icon></span>
+					<div class="form-floating">
+						<input type="text" id="username" formControlName="username" class="form-control" placeholder="Username" />
+						<label for="username">Username</label>
+					</div>
+				</div>
+				<div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="text-danger mb-3">Username is required.</div>
+
+				<div class="mb-3 input-group">
+					<span class="input-group-text"><fa-icon [icon]="faLock"></fa-icon></span>
+					<div class="form-floating">
+						<input type="password" id="password" formControlName="password" class="form-control" placeholder="Password" />
+						<label for="password">Password</label>
+					</div>
+				</div>
+				<div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger mb-3">Password is required.</div>
+
+				<div class="d-grid">
+					<button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
