@@ -5,14 +5,14 @@ import { environment } from '../../environments/environment';
 import { Message } from '../models/message.model';
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root',
 })
 export class MessageService {
-  private apiUrl = 'http://' + environment.apiurl;
+	private apiUrl = environment.apiurl;
 
-  constructor(private http: HttpClient) { }
+	constructor(private http: HttpClient) {}
 
-  getMessageHistory(username: string): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.apiUrl}chat/messages/${username}`);
-  }
+	getMessageHistory(username: string): Observable<Message[]> {
+		return this.http.get<Message[]>(`${this.apiUrl}chat/messages/${username}`);
+	}
 }

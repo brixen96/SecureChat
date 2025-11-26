@@ -6,3 +6,6 @@ bcrypt==3.2.0
 motor
 python-dotenv
 pywebpush
+python-multipart
+websockets
+azure-functions

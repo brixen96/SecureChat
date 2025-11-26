@@ -5,6 +5,9 @@
 /tmp
 /out-tsc
 /bazel-out
+.venv
+.angular
+.gemini
 
 # Node
 /node_modules

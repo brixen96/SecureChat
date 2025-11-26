@@ -1,0 +1,10 @@
+{
+	"appService.defaultWebAppToDeploy": "/subscriptions/526b9672-bbf7-4c61-9369-c85ee9d56e4e/resourceGroups/securechat/providers/Microsoft.Web/sites/securechatapi",
+	"appService.deploySubpath": ".",
+	"azureFunctions.deploySubpath": ".",
+	"azureFunctions.scmDoBuildDuringDeployment": true,
+	"azureFunctions.pythonVenv": ".venv",
+	"azureFunctions.projectLanguage": "Python",
+	"azureFunctions.projectRuntime": "~4",
+	"debug.internalConsoleOptions": "neverOpen"
+}

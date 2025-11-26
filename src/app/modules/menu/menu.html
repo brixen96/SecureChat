@@ -1,0 +1,54 @@
+<div class="menu-container">
+	<div class="menu-header">
+		<div>
+			<h1 class="menu-title">
+				<i class="bi bi-card-list"></i>
+				Menu
+			</h1>
+			<p class="menu-subtitle">Browse our available products</p>
+		</div>
+		<a routerLink="/chat" class="btn btn-outline-primary">
+			<i class="bi bi-arrow-left me-2"></i>
+			Back to Chat
+		</a>
+	</div>
+
+	@if (loading()) {
+		<div class="loading-container">
+			<div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+			<p class="loading-text">Loading menu...</p>
+		</div>
+	}
+
+	@if (error()) {
+		<div class="alert alert-danger" role="alert">
+			<i class="bi bi-exclamation-triangle me-2"></i>
+			{{ error() }}
+		</div>
+	}
+
+	@if (!loading() && !error()) {
+		@if (products().length === 0) {
+			<div class="empty-state">
+				<i class="bi bi-inbox"></i>
+				<p>No products available at the moment</p>
+			</div>
+		} @else {
+			<div class="products-grid">
+				@for (product of products(); track product.id) {
+					<div class="product-card">
+						<div class="product-icon">
+							<i class="bi bi-bag-fill"></i>
+						</div>
+						<div class="product-info">
+							<h3 class="product-name">{{ product.name }}</h3>
+							<p class="product-price">{{ formatPrice(product.price) }} DKK</p>
+						</div>
+					</div>
+				}
+			</div>
+		}
+	}
+</div>

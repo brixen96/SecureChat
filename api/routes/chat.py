@@ -16,32 +16,54 @@ async def websocket_endpoint(websocket: WebSocket, user: models.UserPublic = Dep
         while True:
             message_data = await websocket.receive_json()
 
+            # Handle typing indicator
+            if message_data.get("type") == "typing":
+                is_typing = message_data.get("isTyping", False)
+                typing_payload = json.dumps({"type": "typing", "isTyping": is_typing, "sender": user.username})
+
+                if user.role == "user":
+                    # Send typing indicator to admins
+                    admins = [admin["username"] for admin in db.users.find({"role": "admin"})]
+                    await manager.broadcast_to_admins(typing_payload, admins)
+                elif user.role == "admin":
+                    # Send typing indicator to specific user
+                    recipient = message_data.get("recipient")
+                    if recipient:
+                        await manager.send_personal_message(typing_payload, recipient)
+                continue
+
+            # Handle regular messages
             if user.role == "user":
                 # Basic user sends a message to admins
                 admins = [admin["username"] for admin in db.users.find({"role": "admin"})]
-                message = models.Message(sender=user.username, text=message_data["text"])
-                db.messages.insert_one(message.model_dump())
-                await manager.broadcast_to_admins(message.model_dump_json(), admins)
-                # Also send the message back to the user
-                await manager.send_personal_message(message.model_dump_json(), user.username)
+                text = message_data.get("text")
+                if text:
+                    message = models.Message(sender=user.username, text=text)
+                    db.messages.insert_one(message.model_dump())
+                    message_json = json.dumps({"type": "message", **message.model_dump()}, default=str)
+                    await manager.broadcast_to_admins(message_json, admins)
+                    # Also send the message back to the user
+                    await manager.send_personal_message(message_json, user.username)
 
-                # Send push notifications to admins
-                for admin_username in admins:
-                    subscription = db.subscriptions.find_one({"username": admin_username})
-                    if subscription:
-                        send_push_notification(subscription, f"New message from {user.username}", message.text)
-            
+                    # Send push notifications to admins
+                    for admin_username in admins:
+                        subscription = db.subscriptions.find_one({"username": admin_username})
+                        if subscription:
+                            send_push_notification(subscription, f"New message from {user.username}", message.text)
+
             elif user.role == "admin":
                 # Admin sends a message to a specific user
                 recipient = message_data.get("recipient")
-                if recipient:
-                    message = models.Message(sender=user.username, text=message_data["text"], recipient=recipient)
+                text = message_data.get("text")
+                if recipient and text:
+                    message = models.Message(sender=user.username, text=text, recipient=recipient)
                     db.messages.insert_one(message.model_dump())
-                    await manager.send_personal_message(message.model_dump_json(), recipient)
-                    
+                    message_json = json.dumps({"type": "message", **message.model_dump()}, default=str)
+                    await manager.send_personal_message(message_json, recipient)
+
                     # Send to all admins
                     admins = [admin["username"] for admin in db.users.find({"role": "admin"})]
-                    await manager.broadcast_to_admins(message.model_dump_json(), admins)
+                    await manager.broadcast_to_admins(message_json, admins)
 
                     # Send push notification to the recipient
                     subscription = db.subscriptions.find_one({"username": recipient})

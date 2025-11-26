@@ -17,15 +17,20 @@ import { NotificationService } from '../../services/notification.service';
 })
 export class Chat implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageList') private messageListContainer!: ElementRef;
+  @ViewChild('messageInput') private messageInput!: ElementRef;
   messages: Message[] = [];
   messageForm: FormGroup;
   private messageSubscription: Subscription | undefined;
+  private typingSubscription: Subscription | undefined;
   currentUsername: string | null = null;
+  isTyping = false;
+  isSending = false;
+  private typingTimeout: any;
 
   constructor(
-    private authService: AuthService, 
-    private router: Router, 
-    private chatService: ChatService, 
+    private authService: AuthService,
+    private router: Router,
+    private chatService: ChatService,
     private fb: FormBuilder,
     private notificationService: NotificationService
   ) {
@@ -55,6 +60,13 @@ export class Chat implements OnInit, OnDestroy, AfterViewChecked {
         });
       }
     });
+
+    this.typingSubscription = this.chatService.getTypingIndicator().subscribe((typing: boolean) => {
+      this.isTyping = typing;
+      if (typing) {
+        this.scrollToBottom();
+      }
+    });
   }
 
   ngAfterViewChecked() {
@@ -71,16 +83,45 @@ export class Chat implements OnInit, OnDestroy, AfterViewChecked {
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
     this.chatService.disconnect();
   }
 
+  onTyping(): void {
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+
+    this.chatService.sendTypingIndicator(true);
+
+    this.typingTimeout = setTimeout(() => {
+      this.chatService.sendTypingIndicator(false);
+    }, 1000);
+  }
+
   sendMessage(): void {
-    if (this.messageForm.valid) {
+    if (this.messageForm.valid && !this.isSending) {
+      this.isSending = true;
       const messageText = this.messageForm.value.message;
       const messagePayload = { text: messageText };
+
+      if (this.typingTimeout) {
+        clearTimeout(this.typingTimeout);
+      }
+      this.chatService.sendTypingIndicator(false);
+
       this.chatService.sendMessage(messagePayload);
       this.messageForm.reset();
-      this.scrollToBottom();
+
+      setTimeout(() => {
+        this.isSending = false;
+        this.scrollToBottom();
+      }, 300);
     }
   }
 

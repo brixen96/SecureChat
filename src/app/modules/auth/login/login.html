@@ -2,6 +2,21 @@
 	<div class="card shadow-sm" style="width: 22rem">
 		<div class="card-body">
 			<h1 class="card-title text-center mb-4">Login</h1>
+
+			@if (isLoading()) {
+				<div class="loading-overlay">
+					<div class="loading-content">
+						<div class="spinner-border text-primary mb-3" role="status">
+							<span class="visually-hidden">Logging in...</span>
+						</div>
+						<p class="loading-text">Authenticating...</p>
+						<div class="progress">
+							<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+						</div>
+					</div>
+				</div>
+			}
+
 			<div *ngIf="loginError" class="alert alert-danger" role="alert">
 				{{ loginError }}
 			</div>
@@ -9,7 +24,7 @@
 				<div class="mb-3 input-group">
 					<span class="input-group-text"><fa-icon [icon]="faUser"></fa-icon></span>
 					<div class="form-floating">
-						<input type="text" id="username" formControlName="username" class="form-control" placeholder="Username" />
+						<input type="text" id="username" formControlName="username" class="form-control" placeholder="Username" [disabled]="isLoading()" />
 						<label for="username">Username</label>
 					</div>
 				</div>
@@ -18,14 +33,21 @@
 				<div class="mb-3 input-group">
 					<span class="input-group-text"><fa-icon [icon]="faLock"></fa-icon></span>
 					<div class="form-floating">
-						<input type="password" id="password" formControlName="password" class="form-control" placeholder="Password" />
+						<input type="password" id="password" formControlName="password" class="form-control" placeholder="Password" [disabled]="isLoading()" />
 						<label for="password">Password</label>
 					</div>
 				</div>
 				<div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger mb-3">Password is required.</div>
 
 				<div class="d-grid">
-					<button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+					<button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || isLoading()">
+						@if (isLoading()) {
+							<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+							Logging in...
+						} @else {
+							Login
+						}
+					</button>
 				</div>
 			</form>
 		</div>

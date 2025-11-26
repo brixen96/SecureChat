@@ -61,3 +61,19 @@ class NoteInDB(Note):
 
 class NoteCreate(BaseModel):
     content: str
+
+class Product(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    price: float = Field(..., gt=0)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProductInDB(Product):
+    id: Optional[str] = None
+
+class ProductCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    price: float = Field(..., gt=0)
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=200)
+    price: Optional[float] = Field(None, gt=0)

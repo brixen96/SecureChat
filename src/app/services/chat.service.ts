@@ -2,16 +2,18 @@ import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-import { Observable, EMPTY } from 'rxjs';
+import { Observable, EMPTY, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Message } from '../models/message.model';
+import { filter, map } from 'rxjs/operators';
 
 @Injectable({
 	providedIn: 'root',
 })
 export class ChatService {
 	private socket$: WebSocketSubject<any> | null = null;
-	private apiUrl = 'http://' + environment.apiurl;
+	private apiUrl = environment.apiurl;
+	private typingIndicator$ = new Subject<boolean>();
 
 	constructor(private authService: AuthService, private http: HttpClient) {}
 
@@ -25,15 +27,50 @@ export class ChatService {
 
 	sendMessage(message: any): void {
 		if (this.socket$) {
-			this.socket$.next(message);
+			this.socket$.next({ type: 'message', ...message });
 		}
+	}
+
+	sendTypingIndicator(isTyping: boolean, recipient?: string): void {
+		if (this.socket$) {
+			const payload: any = { type: 'typing', isTyping };
+			if (recipient) {
+				payload.recipient = recipient;
+			}
+			this.socket$.next(payload);
+		}
+	}
+
+	sendTypingIndicatorWithRecipient(isTyping: boolean, recipient: string): void {
+		this.sendTypingIndicator(isTyping, recipient);
 	}
 
 	getMessages(): Observable<any> {
 		if (this.socket$) {
-			return this.socket$.asObservable();
+			return this.socket$.asObservable().pipe(
+				filter((msg: any) => !msg.type || msg.type === 'message'),
+				map((msg: any) => {
+					if (msg.type === 'message') {
+						const { type, ...message } = msg;
+						return message;
+					}
+					return msg;
+				})
+			);
 		}
 		return EMPTY;
+	}
+
+	getTypingIndicator(): Observable<boolean> {
+		if (this.socket$) {
+			this.socket$
+				.asObservable()
+				.pipe(filter((msg: any) => msg.type === 'typing'))
+				.subscribe((msg: any) => {
+					this.typingIndicator$.next(msg.isTyping);
+				});
+		}
+		return this.typingIndicator$.asObservable();
 	}
 
 	disconnect(): void {

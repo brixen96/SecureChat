@@ -1,23 +1,56 @@
 <div class="page-container">
   <div class="header">
-    <h1>Welcome to the Chat!</h1>
-    <button class="btn btn-danger" (click)="logout()">Logout</button>
+    <h1>SecureChat</h1>
+    <div class="header-actions">
+      <a routerLink="/menu" class="btn btn-outline-light">
+        <i class="bi bi-card-list"></i>
+        <span class="ms-1">Menu</span>
+      </a>
+      <button class="btn btn-danger" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        <span class="ms-1">Logout</span>
+      </button>
+    </div>
   </div>
-  <hr />
 
   <div class="chat-container">
     <div class="message-list" #messageList>
-      <div *ngFor="let msg of messages" class="message" [ngClass]="{ sent: msg.sender === currentUsername, received: msg.sender !== currentUsername }">
-        <div class="message-bubble">
-          <p class="message-text">{{ msg.text }}</p>
-          <span class="message-timestamp">{{ msg.timestamp | date : 'shortTime' }}</span>
+      @for (msg of messages; track msg.timestamp) {
+        <div class="message" [class.sent]="msg.sender === currentUsername" [class.received]="msg.sender !== currentUsername">
+          <div class="message-bubble">
+            <p class="message-text">{{ msg.text }}</p>
+            <span class="message-timestamp">{{ msg.timestamp | date : 'shortTime' }}</span>
+          </div>
         </div>
-      </div>
+      }
+      @if (isTyping) {
+        <div class="typing-indicator">
+          Admin is typing
+          <span class="dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+      }
     </div>
     <form [formGroup]="messageForm" (ngSubmit)="sendMessage()" class="message-form">
       <div class="input-group">
-        <input type="text" formControlName="message" class="form-control" />
-        <button type="submit" class="btn btn-primary" [disabled]="messageForm.invalid">Send</button>
+        <input
+          type="text"
+          formControlName="message"
+          class="form-control"
+          placeholder="Type a message..."
+          (input)="onTyping()"
+          #messageInput
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="messageForm.invalid || isSending">
+          @if (isSending) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } @else {
+            Send
+          }
+        </button>
       </div>
     </form>
   </div>

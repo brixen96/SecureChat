@@ -19,12 +19,17 @@ import { NotificationService } from '../../../services/notification.service';
 })
 export class AdminChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageList') private messageListContainer!: ElementRef;
+  @ViewChild('messageInput') private messageInput!: ElementRef;
   messages: Message[] = [];
   messageForm: FormGroup;
   private messageSubscription: Subscription | undefined;
+  private typingSubscription: Subscription | undefined;
   currentUsername: string | null = null;
   selectedUsername: string | null = null;
   faArrowLeft = faArrowLeft;
+  isTyping = false;
+  isSending = false;
+  private typingTimeout: any;
 
   constructor(
     private authService: AuthService,
@@ -69,6 +74,13 @@ export class AdminChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
       }
     });
+
+    this.typingSubscription = this.chatService.getTypingIndicator().subscribe((typing: boolean) => {
+      this.isTyping = typing;
+      if (typing) {
+        this.scrollToBottom();
+      }
+    });
   }
 
   ngAfterViewChecked() {
@@ -85,22 +97,54 @@ export class AdminChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
     this.chatService.disconnect();
   }
 
+  onTyping(): void {
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+
+    if (this.selectedUsername) {
+      this.chatService.sendTypingIndicator(true, this.selectedUsername);
+    }
+
+    this.typingTimeout = setTimeout(() => {
+      if (this.selectedUsername) {
+        this.chatService.sendTypingIndicator(false, this.selectedUsername);
+      }
+    }, 1000);
+  }
+
   sendMessage(): void {
-    if (this.messageForm.valid && this.selectedUsername) {
+    if (this.messageForm.valid && this.selectedUsername && !this.isSending) {
+      this.isSending = true;
       const messageText = this.messageForm.value.message;
       const messagePayload = {
         text: messageText,
         recipient: this.selectedUsername
       };
+
+      if (this.typingTimeout) {
+        clearTimeout(this.typingTimeout);
+      }
+      this.chatService.sendTypingIndicator(false, this.selectedUsername);
+
       this.chatService.sendMessage(messagePayload);
       this.messageForm.reset();
-      this.scrollToBottom();
+
+      setTimeout(() => {
+        this.isSending = false;
+        this.scrollToBottom();
+      }, 300);
     }
   }
-
 
   goBack(): void {
     this.router.navigate(['/admin/users']);

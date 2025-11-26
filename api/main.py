@@ -6,6 +6,7 @@ from routes import users as users_router
 from routes import admin as admin_router
 from routes import user as user_router
 from routes import subscriptions as subscriptions_router
+from routes import menu as menu_router
 from datetime import datetime
 
 def datetime_encoder(obj):
@@ -35,6 +36,7 @@ app.include_router(users_router.router, prefix="/users", tags=["users"])
 app.include_router(admin_router.router, prefix="/admin", tags=["admin"])
 app.include_router(user_router.router, prefix="/user", tags=["user"])
 app.include_router(subscriptions_router.router, prefix="/subscriptions", tags=["subscriptions"])
+app.include_router(menu_router.router, prefix="/menu", tags=["menu"])
 
 @app.get("/")
 def read_root():

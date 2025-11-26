@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -18,6 +18,7 @@ export class Login {
   faLock = faLock;
   loginForm: FormGroup;
   loginError: string | null = null;
+  protected isLoading = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -33,6 +34,7 @@ export class Login {
   onSubmit(): void {
     this.loginError = null;
     if (this.loginForm.valid) {
+      this.isLoading.set(true);
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
           console.log('Login successful', response);
@@ -47,10 +49,12 @@ export class Login {
               this.router.navigate(['/chat']);
             }
           }
+          this.isLoading.set(false);
         },
         error: (error) => {
           console.error('Login failed', error);
           this.loginError = error.error.detail || 'An unknown error occurred.';
+          this.isLoading.set(false);
         }
       });
     }
